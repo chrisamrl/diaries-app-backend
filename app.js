@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+require('express-async-errors');
+const { errorHandler } = require('./utils/middlewares');
 const config = require('./utils/config');
 const usersRouter = require('./routes/users');
 const pagesRouter = require('./routes/pages');
@@ -23,5 +25,7 @@ app.use('/pages', pagesRouter);
 app.get('/', (req, res) => {
   res.send('Test');
 });
+
+app.use(errorHandler);
 
 module.exports = app;

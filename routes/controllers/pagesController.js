@@ -1,7 +1,3 @@
-// Only for initial setup (since login is not implemented yet),
-// need to manually convert string to ObjectId
-const { ObjectId } = require('mongoose').Types;
-
 const Page = require('../../models/page');
 const User = require('../../models/user');
 
@@ -15,7 +11,7 @@ const addPage = async (req, res) => {
     songApiId, content, date, mood, userId,
   } = req.body;
 
-  const associatedUser = await User.findById(ObjectId(userId));
+  const associatedUser = await User.findById(userId);
 
   const page = new Page({
     songApiId,
@@ -39,9 +35,13 @@ const updatePage = async (req, res) => {
   } = req.body;
 
   await Page.updateOne(
-    { _id: ObjectId(pageId) },
+    { _id: pageId },
     {
-      $set: { songApiId, content, mood },
+      $set: {
+        songApiId,
+        content,
+        mood,
+      },
     },
   );
 

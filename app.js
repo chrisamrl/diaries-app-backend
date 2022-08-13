@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const config = require('./utils/config');
-const usersRouter = require('./controllers/users');
-const pagesRouter = require('./controllers/pages');
+const usersRouter = require('./routes/users');
+const pagesRouter = require('./routes/pages');
 
 const app = express();
 

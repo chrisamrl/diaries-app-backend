@@ -22,10 +22,6 @@ mongoose
 app.use('/users', usersRouter);
 app.use('/pages', pagesRouter);
 
-app.get('/', (req, res) => {
-  res.send('Test');
-});
-
 app.use(errorHandler);
 
 module.exports = app;

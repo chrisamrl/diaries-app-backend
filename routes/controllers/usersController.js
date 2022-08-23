@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const User = require('../../models/user');
 
 const getUsers = async (req, res) => {
@@ -13,11 +14,12 @@ const addUser = async (req, res) => {
       error: 'user with given username already exists',
     });
   }
+  // const passwordHash = await bcrypt.hash(password, 10);
 
   const user = new User({
     name,
     username,
-    password,
+    passwordHash: password,
   });
 
   const newUser = await user.save();

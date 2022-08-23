@@ -8,6 +8,7 @@ const User = require('../models/user');
 const { initialPages, initialUsers } = require('./pagesApiTestData');
 
 const api = supertest(app);
+let token1; let token2;
 
 beforeEach(async () => {
   await User.deleteMany({});
@@ -15,14 +16,31 @@ beforeEach(async () => {
 
   initialUsers[0].isNew = true;
   await initialUsers[0].save();
+  const login1 = await api
+    .post('/login')
+    .send({
+      username: initialUsers[0].username,
+      password: '1111',
+    });
+  token1 = login1.body.token;
 
   initialUsers[1].isNew = true;
   await initialUsers[1].save();
+
+  const login2 = await api
+    .post('/login')
+    .send({
+      username: initialUsers[0].username,
+      password: '1111',
+    });
+
+  token2 = login2.body.token;
 });
 
 test('Add a page through api', async () => {
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token1}`)
     .send(initialPages[0])
     .expect(201);
 
@@ -40,16 +58,19 @@ test('Add a page through api', async () => {
 test('Add multiples pages through api', async () => {
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token1}`)
     .send(initialPages[0])
     .expect(201);
 
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token2}`)
     .send(initialPages[1])
     .expect(201);
 
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token2}`)
     .send(initialPages[2])
     .expect(201);
 
@@ -65,6 +86,7 @@ test('Add multiples pages through api', async () => {
 test('Update page through api', async () => {
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token1}`)
     .send(initialPages[0])
     .expect(201);
 
@@ -89,38 +111,6 @@ test('Update page through api', async () => {
   const pagesUpdated = responseUpdated.body;
 
   expect(pages).toHaveLength(1);
-  expect(pagesUpdated[0].songApiId).toBe(999);
-  expect(pagesUpdated[0].content).toBe('updated');
-  expect(pagesUpdated[0].mood).toBe('BAD');
-});
-
-test('Update page through api', async () => {
-  await api
-    .post('/pages')
-    .send(initialPages[0])
-    .expect(201);
-
-  const response = await api.get('/pages');
-  const pages = response.body;
-
-  expect(pages).toHaveLength(1);
-  expect(pages[0].songApiId).toBe(initialPages[0].songApiId);
-  expect(pages[0].content).toBe(initialPages[0].content);
-  expect(pages[0].mood).toBe(initialPages[0].mood);
-
-  await api
-    .patch('/pages')
-    .send({
-      songApiId: 999,
-      content: 'updated',
-      mood: 'BAD',
-      pageId: pages[0]._id,
-    });
-
-  const responseUpdated = await api.get('/pages');
-  const pagesUpdated = responseUpdated.body;
-
-  expect(pagesUpdated).toHaveLength(1);
   expect(pagesUpdated[0].songApiId).toBe(999);
   expect(pagesUpdated[0].content).toBe('updated');
   expect(pagesUpdated[0].mood).toBe('BAD');
@@ -129,16 +119,19 @@ test('Update page through api', async () => {
 test('Added page are associated to corresponding user', async () => {
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token1}`)
     .send(initialPages[0])
     .expect(201);
 
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token2}`)
     .send(initialPages[1])
     .expect(201);
 
   await api
     .post('/pages')
+    .set('Authorization', `Bearer ${token2}`)
     .send(initialPages[2])
     .expect(201);
 

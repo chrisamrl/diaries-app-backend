@@ -1,16 +1,17 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
 const initialUsers = [
   new User({
     name: 'user1',
     username: 'user1',
-    passwordHash: '1111',
+    passwordHash: bcrypt.hashSync('1111', 10),
     pages: [],
   }),
   new User({
     name: 'user2',
     username: 'user2',
-    passwordHash: '2222',
+    passwordHash: bcrypt.hashSync('2222', 10),
     pages: [],
   }),
 ];

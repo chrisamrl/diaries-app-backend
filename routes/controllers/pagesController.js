@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const Page = require('../../models/page');
 const User = require('../../models/user');
 
@@ -6,10 +7,24 @@ const getPages = async (req, res) => {
   return res.json(pages);
 };
 
+const getTokenFrom = (req) => {
+  const authorization = req.get('authorization');
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7);
+  }
+  return null;
+};
+
 const addPage = async (req, res) => {
   const {
     songApiId, content, date, mood, userId,
   } = req.body;
+
+  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
+
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'missing or invalid token' });
+  }
 
   const associatedUser = await User.findById(userId);
 

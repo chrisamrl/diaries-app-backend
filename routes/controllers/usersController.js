@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../../models/user');
 
 const getUsers = async (req, res) => {
@@ -14,12 +15,12 @@ const addUser = async (req, res) => {
       error: 'user with given username already exists',
     });
   }
-  // const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 10);
 
   const user = new User({
     name,
     username,
-    passwordHash: password,
+    passwordHash,
   });
 
   const newUser = await user.save();
@@ -27,11 +28,24 @@ const addUser = async (req, res) => {
   return res.status(201).json(newUser);
 };
 
+const getTokenFrom = (req) => {
+  const authorization = req.get('authorization');
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7);
+  }
+  return null;
+};
+
 const getUserPages = async (req, res) => {
   const { userId } = req.params;
 
   const user = await User.findById(userId).populate('pages');
 
+  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
+
+  if (decodedToken.id !== userId) {
+    return res.status(401).json({ error: 'missing or invalid token' });
+  }
   if (!user) {
     return res.status(404).json({
       message: 'user not found',

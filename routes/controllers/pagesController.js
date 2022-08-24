@@ -22,7 +22,7 @@ const addPage = async (req, res) => {
 
   const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
 
-  if (!decodedToken.id) {
+  if (decodedToken.id !== userId) {
     return res.status(401).json({ error: 'missing or invalid token' });
   }
 

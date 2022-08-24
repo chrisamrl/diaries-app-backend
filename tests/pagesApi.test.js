@@ -30,8 +30,8 @@ beforeEach(async () => {
   const login2 = await api
     .post('/login')
     .send({
-      username: initialUsers[0].username,
-      password: '1111',
+      username: initialUsers[1].username,
+      password: '2222',
     });
 
   token2 = login2.body.token;
@@ -135,8 +135,13 @@ test('Added page are associated to corresponding user', async () => {
     .send(initialPages[2])
     .expect(201);
 
-  const response1 = await api.get(`/users/${initialUsers[0]._id}/pages`);
-  const response2 = await api.get(`/users/${initialUsers[1]._id}/pages`);
+  const response1 = await api
+    .get(`/users/${initialUsers[0]._id}/pages`)
+    .set('Authorization', `Bearer ${token1}`);
+
+  const response2 = await api
+    .get(`/users/${initialUsers[1]._id}/pages`)
+    .set('Authorization', `Bearer ${token2}`);
 
   const pages1 = response1.body;
   const pages2 = response2.body;

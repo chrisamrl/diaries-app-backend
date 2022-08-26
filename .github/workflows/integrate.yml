@@ -1,11 +1,11 @@
 name: Integrate to main branch
 
 on:
-  pull_request:
+  push:
     branches: [ main ]
 
 jobs:
-  test_pull_request:
+  test_push:
     runs-on: ubuntu-latest
     environment: development
     services:
@@ -18,5 +18,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16
+      - run: |
+          touch .env
+          echo TEST_MONGODB_URI=${{ secrets.TEST_MONGODB_URI }} >> .env
+          echo SECRET=${{ secrets.SECRET }} >> .env
+          echo PORT=${{ secrets.PORT }} >> .env
+          cat .env
       - run: npm ci
       - run: npm run test

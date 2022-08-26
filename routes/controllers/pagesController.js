@@ -1,18 +1,11 @@
 const jwt = require('jsonwebtoken');
 const Page = require('../../models/page');
 const User = require('../../models/user');
+const { getTokenFromHeader } = require('../../utils/authorizationHelper');
 
 const getPages = async (req, res) => {
   const pages = await Page.find({});
   return res.json(pages);
-};
-
-const getTokenFrom = (req) => {
-  const authorization = req.get('authorization');
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7);
-  }
-  return null;
 };
 
 const addPage = async (req, res) => {
@@ -20,26 +13,26 @@ const addPage = async (req, res) => {
     songApiId, content, date, mood, userId,
   } = req.body;
 
-  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
-
+  // Check that request is authorized
+  const decodedToken = jwt.verify(getTokenFromHeader(req), process.env.SECRET);
   if (decodedToken.id !== userId) {
     return res.status(401).json({ error: 'missing or invalid token' });
   }
 
-  const associatedUser = await User.findById(userId);
+  const user = await User.findById(userId);
 
   const page = new Page({
     songApiId,
     content,
     date: new Date(date),
     mood,
-    user: associatedUser._id,
+    user: user._id,
   });
 
   const savedPage = await page.save();
 
-  associatedUser.pages = associatedUser.pages.concat(savedPage._id);
-  await associatedUser.save();
+  user.pages = user.pages.concat(savedPage._id);
+  await user.save();
 
   return res.status(201).json(savedPage);
 };
